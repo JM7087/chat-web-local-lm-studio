@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Web Local LM Studio</title>
+
+    <link rel="shortcut icon" type="imagex/png" href="img\icone.png">
+
+    <link rel="stylesheet" href="css\style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chat Web Local LM Studio</h1>
+            <div class="status" id="status">Desconectado</div>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages" id="messages"></div>
+        </div>
+
+        <div class="input-container">
+            <textarea id="messageInput" placeholder="Digite sua mensagem..." rows="3"></textarea>
+            <div class="button-container">
+                <button id="sendButton">Enviar</button>
+                <button id="clearButton">Limpar</button>
+            </div>
+        </div>
+
+        <div class="settings">
+            <label>URL do Servidor:</label>
+            <input type="text" id="serverUrl" value="http://localhost:1234/v1/chat/completions">
+            <label>Modelo:</label>
+            <input type="text" id="modelName" disabled value="local-model">
+        </div>
+    </div>
+
+    <footer>
+        <div align="center" class="credit">
+            <a href="https://grupo.jm7087.com" class="cor-link-rodape">Grupo JM7087</a>
+            © Copyright 2010-
+            <script type="text/javascript">
+                document.write(new Date().getFullYear());
+            </script>
+            . Todos os direitos reservados. Desenvolvido <span class="cor-nome-dev-rodape"> João Marcos</span><span
+                class="texto-rodape">.
+        </div>
+    </footer>
+
+    <script src="js\script.js"></script>
+</body>
+
+</html>

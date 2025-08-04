@@ -1,0 +1,262 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 50%;
+    margin: 15px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 1.5em;
+}
+
+.status {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    background: #e74c3c;
+}
+
+.status.connected {
+    background: #27ae60;
+}
+
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message.user {
+    background: #3498db;
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.message.assistant {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+
+.message.error {
+    background: #e74c3c;
+    color: white;
+}
+
+.input-container {
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+/* Container para os botões */
+.button-container {
+    display: flex;
+    gap: 10px;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    resize: vertical;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+#messageInput:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+button {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#sendButton {
+    background: #27ae60;
+    color: white;
+}
+
+#sendButton:hover {
+    background: #229954;
+}
+
+#sendButton:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+#clearButton {
+    background: #e74c3c;
+    color: white;
+}
+
+#clearButton:hover {
+    background: #c0392b;
+}
+
+.settings {
+    padding: 15px 20px;
+    background: #34495e;
+    color: white;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.settings label {
+    font-weight: bold;
+}
+
+.settings input {
+    width: 30%;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    background: white;
+    color: #2c3e50;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+main {
+    flex-grow: 1;
+    width: 100%;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+footer {
+    background-color: #426499;
+    color: #ffffff;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: auto;
+    width: 100%;
+}
+
+.cor-link-rodape {
+    color: #ffffff;
+}
+
+.cor-nome-dev-rodape {
+    color: #cccccc;
+}
+
+.texto-rodape {
+    font-size: 100%;
+    text-align: left;
+}
+
+/* Media Query para mobile */
+@media (max-width: 600px) {
+    .container {
+        height: 89vh;
+        width: 90%;
+        margin: 10px;
+    }
+
+    /* Mudança principal: input-container em coluna no mobile */
+    .input-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    /* Textarea ocupa toda a largura */
+    #messageInput {
+        width: 100%;
+        min-height: 80px;
+    }
+
+    /* Container dos botões */
+    .button-container {
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+    }
+
+    /* Botões ocupam espaço igual */
+    #sendButton,
+    #clearButton {
+        flex: 1;
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .settings {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .settings input {
+        width: 100%;
+        margin-top: 5px;
+    }
+}
