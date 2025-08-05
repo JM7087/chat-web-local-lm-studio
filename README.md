@@ -107,11 +107,15 @@ A aplicação utiliza os seguintes parâmetros por padrão:
 ### CORS
 Se encontrar problemas de CORS, certifique-se de que o LM Studio está configurado para aceitar requisições da origem do seu arquivo HTML.
 
-## Problemas Conhecidos
+## Problemas Possível 
 
 - Certifique-se de que o LM Studio está executando antes de usar a aplicação
 - Alguns navegadores podem bloquear requisições localhost por questões de segurança
 - Para melhor experiência, use em servidores HTTP locais ao invés de abrir diretamente o arquivo HTML
+
+## Compatibilidade
+1. LM Studio
+2. APIs OpenAI-like
 
 ## Contribuição
 
@@ -129,6 +133,4 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes
 
 ## Créditos
 
-- Desenvolvido por [João Marcos](https://grupo.jm7087.com)
-- Interface inspirada em aplicações de chat modernas
-- Compatível com LM Studio e APIs OpenAI-like
+- Desenvolvido por [João Marcos](https://links.jm7087.com)
