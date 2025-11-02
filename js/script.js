@@ -169,8 +169,18 @@ class LMStudioChat {
         messageDiv.innerHTML = content;
         this.messagesContainer.appendChild(messageDiv);
 
-        // Scroll imediato (mais confiável)
-        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        // Garante que o último elemento fique visível de forma suave e confiável
+        // Usa scrollIntoView no elemento recém-adicionado (mais robusto que manipular scrollTop diretamente).
+        // Se quiser comportamento instantâneo, troque 'smooth' por 'auto'.
+        try {
+            // Pequeno timeout para garantir que o layout foi atualizado antes do scroll
+            setTimeout(() => {
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+            }, 10);
+        } catch (e) {
+            // fallback: scroll imediato caso scrollIntoView falhe
+            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        }
     }
 
     setLoading(loading) {
@@ -184,9 +194,9 @@ class LMStudioChat {
             loadingDiv.id = 'loading-message';
             this.messagesContainer.appendChild(loadingDiv);
 
-            // Scroll também aqui
+            // Scroll para o loading de forma suave
             setTimeout(() => {
-                this.smoothScrollToBottom();
+                loadingDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }, 50);
         } else {
             const loadingMessage = document.getElementById('loading-message');
