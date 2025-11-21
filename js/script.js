@@ -39,9 +39,17 @@ class LMStudioChat {
     toggleSpeech() {
         this.speechEnabled = !this.speechEnabled;
         this.toggleSpeechButton.textContent = this.speechEnabled ? '🔇 Desativar Fala' : '🔈 Ativar Fala';
-        // Para imediatamente qualquer fala em andamento ao desativar
-        if (!this.speechEnabled) {
+        if (this.speechEnabled) {
+            // Anuncia que o sistema de fala foi ativado usando o método speak (respeita flag)
+            this.speak('Sistema de fala ativado');
+        } else {
+            // Para imediatamente qualquer fala em andamento
             window.speechSynthesis.cancel();
+            // Ainda anuncia que o sistema de fala foi desativado (uma única vez),
+            // sem alterar a flag que já foi setada para false.
+            const utterance = new SpeechSynthesisUtterance('Sistema de fala desativado');
+            utterance.lang = 'pt-BR';
+            window.speechSynthesis.speak(utterance);
         }
     }
 
