@@ -2,6 +2,7 @@ class LMStudioChat {
     constructor() {
         this.messages = [];
         this.isLoading = false;
+        this.speechEnabled = false; // flag para fala
         this.initializeElements();
         this.bindEvents();
         this.checkConnection();
@@ -15,6 +16,7 @@ class LMStudioChat {
         this.statusElement = document.getElementById('status');
         this.serverUrlInput = document.getElementById('serverUrl');
         this.modelNameInput = document.getElementById('modelName');
+        this.toggleSpeechButton = document.getElementById('toggleSpeech');
     }
 
     bindEvents() {
@@ -29,6 +31,27 @@ class LMStudioChat {
         });
 
         this.serverUrlInput.addEventListener('change', () => this.checkConnection());
+
+        // Evento do botão de fala
+        this.toggleSpeechButton.addEventListener('click', () => this.toggleSpeech());
+    }
+
+    toggleSpeech() {
+        this.speechEnabled = !this.speechEnabled;
+        this.toggleSpeechButton.textContent = this.speechEnabled ? '🔇 Desativar Fala' : '🔈 Ativar Fala';
+        // Para imediatamente qualquer fala em andamento ao desativar
+        if (!this.speechEnabled) {
+            window.speechSynthesis.cancel();
+        }
+    }
+
+    speak(text) {
+        if (!this.speechEnabled) return;
+        // Cancela qualquer fala anterior antes de iniciar uma nova
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pt-BR';
+        window.speechSynthesis.speak(utterance);
     }
 
     getBaseUrl() {
@@ -169,17 +192,20 @@ class LMStudioChat {
         messageDiv.innerHTML = content;
         this.messagesContainer.appendChild(messageDiv);
 
-        // Garante que o último elemento fique visível de forma suave e confiável
-        // Usa scrollIntoView no elemento recém-adicionado (mais robusto que manipular scrollTop diretamente).
-        // Se quiser comportamento instantâneo, troque 'smooth' por 'auto'.
+        // Scroll automático
         try {
-            // Pequeno timeout para garantir que o layout foi atualizado antes do scroll
             setTimeout(() => {
                 messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
             }, 10);
         } catch (e) {
-            // fallback: scroll imediato caso scrollIntoView falhe
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        }
+
+        // Fala a resposta da IA se ativado
+        if (role === 'assistant') {
+            // Remove tags HTML para a fala
+            const textToSpeak = messageDiv.textContent || messageDiv.innerText || '';
+            this.speak(textToSpeak);
         }
     }
 
