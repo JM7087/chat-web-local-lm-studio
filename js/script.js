@@ -2,9 +2,12 @@ class LMStudioChat {
     constructor() {
         this.messages = [];
         this.isLoading = false;
-        this.speechEnabled = false; // flag para fala
+        this.speechEnabled = false;
+        this.voices = [];
+        this.selectedVoice = null;
         this.initializeElements();
         this.bindEvents();
+        this.loadVoices();
         this.checkConnection();
     }
 
@@ -17,6 +20,7 @@ class LMStudioChat {
         this.serverUrlInput = document.getElementById('serverUrl');
         this.modelNameInput = document.getElementById('modelName');
         this.toggleSpeechButton = document.getElementById('toggleSpeech');
+        this.voiceSelect = document.getElementById('voiceSelect');
     }
 
     bindEvents() {
@@ -31,40 +35,80 @@ class LMStudioChat {
         });
 
         this.serverUrlInput.addEventListener('change', () => this.checkConnection());
-
-        // Evento do botão de fala
         this.toggleSpeechButton.addEventListener('click', () => this.toggleSpeech());
+        this.voiceSelect.addEventListener('change', () => this.updateSelectedVoice());
+    }
+
+    loadVoices() {
+        const setVoices = () => {
+            this.voices = window.speechSynthesis.getVoices().filter(v => 
+                v.lang.startsWith('pt') || v.lang.includes('BR') || v.lang.includes('PT')
+            );
+            console.log('Vozes em português disponíveis:', this.voices.map(v => v.name));
+            this.updateSelectedVoice();
+        };
+        
+        window.speechSynthesis.onvoiceschanged = setVoices;
+        setVoices();
+    }
+
+    updateSelectedVoice() {
+        if (!this.voices.length) {
+            console.log('Nenhuma voz em português encontrada');
+            return;
+        }
+
+        const type = this.voiceSelect.value;
+
+        const nomesFemininos = ['maria', 'vitoria', 'luciana', 'camila', 'francisca', 'fem', 'female', 'feminina', 'raquel', 'helena'];
+        const nomesMasculinos = ['daniel', 'ricardo', 'antonio', 'carlos', 'male', 'masculina', 'masc', 'pedro', 'jorge'];
+
+        let voz = null;
+
+        if (type === 'feminina') {
+            voz = this.voices.find(v =>
+                nomesFemininos.some(nome => v.name.toLowerCase().includes(nome))
+            );
+            if (!voz) voz = this.voices[0];
+        } else {
+            voz = this.voices.find(v =>
+                nomesMasculinos.some(nome => v.name.toLowerCase().includes(nome))
+            );
+            if (!voz) voz = this.voices[this.voices.length - 1] || this.voices[0];
+        }
+
+        this.selectedVoice = voz;
+        console.log('Voz selecionada:', voz?.name || 'Nenhuma');
     }
 
     toggleSpeech() {
         this.speechEnabled = !this.speechEnabled;
         this.toggleSpeechButton.textContent = this.speechEnabled ? '🔇 Desativar Fala' : '🔈 Ativar Fala';
+        
         if (this.speechEnabled) {
-            // Anuncia que o sistema de fala foi ativado usando o método speak (respeita flag)
             this.speak('Sistema de fala ativado');
         } else {
-            // Para imediatamente qualquer fala em andamento
             window.speechSynthesis.cancel();
-            // Ainda anuncia que o sistema de fala foi desativado (uma única vez),
-            // sem alterar a flag que já foi setada para false.
             const utterance = new SpeechSynthesisUtterance('Sistema de fala desativado');
             utterance.lang = 'pt-BR';
+            if (this.selectedVoice) utterance.voice = this.selectedVoice;
             window.speechSynthesis.speak(utterance);
         }
     }
 
     speak(text) {
         if (!this.speechEnabled) return;
-        // Cancela qualquer fala anterior antes de iniciar uma nova
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'pt-BR';
+        if (this.selectedVoice) {
+            utterance.voice = this.selectedVoice;
+        }
         window.speechSynthesis.speak(utterance);
     }
 
     getBaseUrl() {
         const url = this.serverUrlInput.value;
-        // Se a URL já contém o endpoint completo, extrai apenas a base
         if (url.includes('/v1/chat/completions')) {
             return url.replace('/v1/chat/completions', '');
         }
@@ -90,7 +134,6 @@ class LMStudioChat {
                 console.log('Modelos disponíveis:', data);
                 this.updateStatus('Conectado', true);
 
-                // Atualiza o campo de modelo com o primeiro modelo disponível
                 if (data.data && data.data.length > 0) {
                     this.modelNameInput.value = data.data[0].id;
                 }
@@ -134,15 +177,6 @@ class LMStudioChat {
         const baseUrl = this.getBaseUrl();
         const chatUrl = `${baseUrl}/v1/chat/completions`;
 
-        console.log('Enviando para:', chatUrl);
-        console.log('Payload:', {
-            model: this.modelNameInput.value,
-            messages: this.messages,
-            temperature: 0.7,
-            max_tokens: 1000,
-            stream: false
-        });
-
         const response = await fetch(chatUrl, {
             method: 'POST',
             headers: {
@@ -157,16 +191,12 @@ class LMStudioChat {
             })
         });
 
-        console.log('Status da resposta:', response.status);
-
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Erro na resposta:', errorText);
             throw new Error(`HTTP ${response.status}: ${response.statusText}\n${errorText}`);
         }
 
         const data = await response.json();
-        console.log('Resposta recebida:', data);
 
         if (data.choices && data.choices[0] && data.choices[0].message) {
             const assistantMessage = data.choices[0].message.content;
@@ -177,7 +207,6 @@ class LMStudioChat {
         }
     }
 
-    // Função de scroll suave (DENTRO da classe)
     smoothScrollToBottom() {
         this.messagesContainer.scrollTo({
             top: this.messagesContainer.scrollHeight,
@@ -190,17 +219,17 @@ class LMStudioChat {
         messageDiv.className = `message ${role}`;
 
         if (role === 'assistant') {
-            content = content
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\n/g, '<br>');
+            content = this.parseCodeBlocks(content);
+            content = this.parseInlineMarkdown(content);
         }
 
         messageDiv.innerHTML = content;
         this.messagesContainer.appendChild(messageDiv);
 
-        // Scroll automático
+        messageDiv.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.copyCode(btn));
+        });
+
         try {
             setTimeout(() => {
                 messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
@@ -209,12 +238,74 @@ class LMStudioChat {
             this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
         }
 
-        // Fala a resposta da IA se ativado
         if (role === 'assistant') {
-            // Remove tags HTML para a fala
             const textToSpeak = messageDiv.textContent || messageDiv.innerText || '';
             this.speak(textToSpeak);
         }
+    }
+
+    parseCodeBlocks(content) {
+        const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
+        
+        return content.replace(codeBlockRegex, (match, language, code) => {
+            const lang = language || 'code';
+            const originalCode = code.trim();
+            const escapedCode = this.escapeHtml(originalCode);
+            const base64Code = btoa(unescape(encodeURIComponent(originalCode)));
+            
+            return `
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="language">${lang}</span>
+                        <button class="copy-btn" data-code-base64="${base64Code}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copiar
+                        </button>
+                    </div>
+                    <pre><code>${escapedCode}</code></pre>
+                </div>
+            `;
+        });
+    }
+
+    parseInlineMarkdown(content) {
+        return content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>');
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    copyCode(button) {
+        const base64Code = button.getAttribute('data-code-base64');
+        const code = decodeURIComponent(escape(atob(base64Code)));
+
+        navigator.clipboard.writeText(code).then(() => {
+            const originalText = button.innerHTML;
+            button.classList.add('copied');
+            button.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Copiado!
+            `;
+            
+            setTimeout(() => {
+                button.classList.remove('copied');
+                button.innerHTML = originalText;
+            }, 2000);
+        }).catch(err => {
+            console.error('Erro ao copiar:', err);
+        });
     }
 
     setLoading(loading) {
@@ -228,7 +319,6 @@ class LMStudioChat {
             loadingDiv.id = 'loading-message';
             this.messagesContainer.appendChild(loadingDiv);
 
-            // Scroll para o loading de forma suave
             setTimeout(() => {
                 loadingDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }, 50);
@@ -246,7 +336,6 @@ class LMStudioChat {
     }
 }
 
-// Inicializar a aplicação quando a página carregar
 document.addEventListener('DOMContentLoaded', () => {
     new LMStudioChat();
 });
